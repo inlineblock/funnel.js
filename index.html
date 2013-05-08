@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="http://underscorejs.org/underscore.js"></script>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
+    <script src="http://backbonejs.org/backbone.js"></script>
+    <script src="funnel.js" charset="utf-8"></script>
+    <style>
+      body {
+        font-family: Helvetica;
+      }
+      .funnel {
+        position: relative;
+        background: #F0F0F0;
+      }
+      .funnel-piece {
+        background-color: gray;
+        position: absolute;
+        transition: 100ms;
+        background-clip: content-box;
+        border: 0px solid transparent;
+      }
+      .funnel-piece:hover {
+        cursor: pointer;
+        opacity: 0.9;
+      }
+      .funnel-axis {
+        position: absolute;
+        bottom: 0px;
+      }
+      .funnel-axis .title{
+        font-size: 14px;
+        line-height: 22px;
+        padding: 0 6px;
+        color: #606060;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .funnel-axis .amount{
+        line-height: 18px;
+        font-size: 10px;
+        padding: 0 6px;
+        color: #999;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Funnel HTML5</h1>
+    <div class="funnel-container">
+    </div>
+    <button id="update">Update</button>
+    <script type="text/javascript">
+      $(function () {
+        var getRandomData = function (count) {
+          var data = [],
+            i=0,
+            count = count || 6;
+
+          for(i=0; i < count; i++) {
+            data.push({amount: Math.floor(Math.random() * 10000) , title: 'Something-' + i});
+          }
+          return _.sortBy(data , function (d) {
+            return -d.amount;
+          });
+        }
+        var funnel = new Funnel({
+          valueAttribute: 'amount',
+          uniqueAttribute: 'title',
+          height: 300,
+          data: [
+            {amount: 9909 , title: 'Vistors'},
+            {amount: 8999 , title: 'Unique Vistors'},
+            {amount: 3040 , title: 'Signups'},
+            {amount: 2903 , title: 'Confirmed Users'},
+            {amount: 1333 , title: 'Active Users'},
+          ],
+          axisTemplate: _.template('<div class="title"><%= title %></div><div class="amount"><%= amount %></div>')
+        });
+        $('.funnel-container').append(funnel.el);
+        $('#update').on('click' , function () {
+          var items = Math.ceil(Math.random()*7)+1;
+          funnel.update(getRandomData(items));
+        });
+      });
+    </script>
+  </body>
+</html>
