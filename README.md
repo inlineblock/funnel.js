@@ -1,6 +1,8 @@
 Funnel.js
 =========
 
+![Funnel.js example image](https://github.com/inlineblock/funnel.js/raw/master/example.png)
+
 An all div's funnel in javascript written in D3 with Backbone.js
 
 ## Easy way to run the index.html
