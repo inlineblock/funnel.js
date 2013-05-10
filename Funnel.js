@@ -81,10 +81,10 @@ var Funnel = Backbone.View.extend({
       .attr('class' , 'funnel-axis');
     //update
     axes
-      .attr('style' , '')
       .style(this.isHorizontal() ? 'left' : 'top' , function (data , i) {
         return ((that.getPieceSize() * i) + (i * that.options.gapBetweenWidth)) + 'px';
       })
+      .style(this.isHorizontal() ? 'top' : 'left' , 'auto')
       .style(this.isHorizontal() ? 'width' : 'height' , this.getPieceSize() + 'px')
       .style(this.isHorizontal() ? 'height' : 'width', this.options.axisSize + 'px')
       .html(function(data , i) {
