@@ -17,7 +17,7 @@
       .funnel-piece {
         background-color: gray;
         position: absolute;
-        transition: 100ms;
+        transition: 250ms;
         background-clip: content-box;
         border: 0px solid transparent;
       }
@@ -27,7 +27,12 @@
       }
       .funnel-axis {
         position: absolute;
+      }
+      .funnel.horizontal-funnel .funnel-axis {
         bottom: 0px;
+      }
+      .funnel.vertical-funnel .funnel-axis {
+        right: 0px;
       }
       .funnel-axis .title{
         font-size: 14px;
@@ -54,6 +59,7 @@
     <div class="funnel-container">
     </div>
     <button id="update">Update</button>
+    <button id="toggle-orientation">Toggle Orientation</button>
     <script type="text/javascript">
       $(function () {
         var getRandomData = function (count) {
@@ -64,14 +70,15 @@
           for(i=0; i < count; i++) {
             data.push({amount: Math.floor(Math.random() * 10000) , title: 'Something-' + i});
           }
-          return _.sortBy(data , function (d) {
-            return -d.amount;
-          });
+          return data;
         }
         var funnel = new Funnel({
           valueAttribute: 'amount',
           uniqueAttribute: 'title',
-          height: 300,
+          height: 400,
+          sortData: true,
+          horizontalOrientation: true,
+          axisSize: 40,
           data: [
             {amount: 9909 , title: 'Vistors'},
             {amount: 8999 , title: 'Unique Vistors'},
@@ -85,6 +92,11 @@
         $('#update').on('click' , function () {
           var items = Math.ceil(Math.random()*7)+1;
           funnel.update(getRandomData(items));
+        });
+        $('#toggle-orientation').on('click' , function () {
+          funnel.options.horizontalOrientation = !funnel.options.horizontalOrientation;
+          funnel.options.axisSize = funnel.options.horizontalOrientation ? 40 : 200;
+          funnel.update();
         });
       });
     </script>

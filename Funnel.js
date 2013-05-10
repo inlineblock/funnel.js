@@ -2,13 +2,15 @@ var Funnel = Backbone.View.extend({
   className: 'funnel',
 
   options: {
+    horizontalOrientation: true,
     valueAttribute: 'value',
     uniqueAttribute: 'id',
     scale: 'linear', // d3 scales
     gapBetweenWidth: 20, // px
     width: 'auto',
     height: 'auto',
-    xAxisHeight: 40,
+    axisSize: 40,
+    sortData: false,
     colors: [
       '#73D216',
       '#204A87',
@@ -34,8 +36,8 @@ var Funnel = Backbone.View.extend({
 
   createScales: function () {
     this.max = _.max(this.options.data , this.getValueFromDataItem);
-    this.heightScale = d3.scale[this.options.scale]()
-        .rangeRound([0, this.getGraphHeight()])
+    this.categoryAxisScale = d3.scale[this.options.scale]()
+        .rangeRound([0, this.getGraphValueAxisSize()])
         .domain([0, this.getValueFromDataItem(this.max)]);
   },
 
@@ -44,20 +46,32 @@ var Funnel = Backbone.View.extend({
   },
 
   update: function (data) {
-    this.options.data = data;
+    if (data) {
+      this.options.data = data;
+    }
     this.render();
   },
 
   render: function () {
     this.$el.height(this.getHeight());
+    if (this.options.sortData) {
+      this.options.data = _.sortBy(this.options.data , function (d) {
+        return -this.getValueFromDataItem(d);
+      } , this);
+    }
+    if (this.isHorizontal()) {
+      this.$el.addClass('horizontal-funnel').removeClass('vertical-funnel');
+    } else {
+      this.$el.removeClass('horizontal-funnel').addClass('vertical-funnel');
+    }
     this.createScales();
     this.renderAxis();
     this.renderFunnel();
   },
 
   renderAxis: function () {
-    var that = this;
-    var axes = this.visualization.selectAll('.funnel-axis')
+    var that = this,
+      axes = this.visualization.selectAll('.funnel-axis')
       .data(this.options.data , function (data) {
         return data[that.options.uniqueAttribute];
       });
@@ -67,11 +81,12 @@ var Funnel = Backbone.View.extend({
       .attr('class' , 'funnel-axis');
     //update
     axes
-      .style('left' , function (data , i) {
-        return ((that.getPieceWidth() * i) + (i * that.options.gapBetweenWidth)) + 'px';
+      .attr('style' , '')
+      .style(this.isHorizontal() ? 'left' : 'top' , function (data , i) {
+        return ((that.getPieceSize() * i) + (i * that.options.gapBetweenWidth)) + 'px';
       })
-      .style('width' , this.getPieceWidth() + 'px')
-      .style('height' , this.options.xAxisHeight + 'px')
+      .style(this.isHorizontal() ? 'width' : 'height' , this.getPieceSize() + 'px')
+      .style(this.isHorizontal() ? 'height' : 'width', this.options.axisSize + 'px')
       .html(function(data , i) {
         if (that.options.axisTemplate) {
           return that.options.axisTemplate(data);
@@ -99,47 +114,47 @@ var Funnel = Backbone.View.extend({
     // update
     // build the squares
     pieces
-      .style('border-left-color' , d3.rgb(this.options.colors[0]).darker().toString())
-      .style('width' , this.getPieceWidth() + 'px')
+      .attr('style' , '')
+      .style('border-' + (this.isHorizontal() ? 'left' : 'top') + '-color' , d3.rgb(this.options.colors[0]).darker().toString())
+      .style(this.isHorizontal() ? 'width' : 'height' , this.getPieceSize() + 'px')
       .style('background-color' , this.options.colors[0])
-      .style('top' , function (data , i) {
+      .style(this.isHorizontal() ? 'top' : 'left' , function (data , i) {
         var previous = that.options.data[i-1];
         if (previous) {
           this._previous = previous;
-          return (Math.round(that.getGraphHeight()/2) - Math.round(that.heightScale(that.getValueFromDataItem(this._previous))/2)) + 'px';
+          return  (Math.round(that.getGraphValueAxisSize()/2) - Math.round(that.categoryAxisScale(that.getValueFromDataItem(this._previous))/2)) + 'px';
         } else {
           this._previous = false;
           return '0px';
         }
       })
-      .style('height' , function (data) {
-        this._height = Math.round(that.heightScale(that.getValueFromDataItem(data)));
-        return this._height + 'px';
+      .style(this.isHorizontal() ? 'height' : 'width' , function (data) {
+        this._valueSize = Math.round(that.categoryAxisScale(that.getValueFromDataItem(data)));
+        return this._valueSize + 'px';
       })
-      .style('left' , function (data , i) {
-          return ((that.getPieceWidth() * i) + Math.round(that.options.gapBetweenWidth * (i-1 >= 0 ? i-1 :0 ))) + 'px';
+      .style(this.isHorizontal() ? 'left' : 'top' , function (data , i) {
+          return ((that.getPieceSize() * i) + Math.round(that.options.gapBetweenWidth * (i-1 >= 0 ? i-1 :0 ))) + 'px';
       })
-      .style('border-top-width' , function (data , i) {
+      .style('border-' + (this.isHorizontal() ? 'top' : 'left') + '-width' , function (data , i) {
         if (this._previous) {
-          var prevHeight = that.heightScale(that.getValueFromDataItem(this._previous)),
-            _borderWidth = Math.round((prevHeight-this._height)/2),
-            total = ((_borderWidth * 2) + this._height);
-          this._borderWidth = _borderWidth;
-          if (total > prevHeight) {
-            this._borderWidth--;
+          var previousSize = that.categoryAxisScale(that.getValueFromDataItem(this._previous)),
+            _borderSize = Math.round((previousSize-this._valueSize)/2),
+            total = ((_borderSize * 2) + this._valueSize);
+          this._borderSize = _borderSize;
+          if (total > previousSize) {
+            this._borderSize--;
           }
-          return _borderWidth + 'px';
+          return _borderSize + 'px';
         } else {
-          this._borderWidth = 0;
+          this._borderSize = 0;
           return '0px';
         }
       })
-      .style('border-bottom-width' , function () {
-        return this._borderWidth ? this._borderWidth + 'px' : '0px';
+      .style('border-' + (this.isHorizontal() ? 'bottom' : 'right') + '-width' , function () {
+        return this._borderSize ? this._borderSize + 'px' : '0px';
       })
-      .style('border-left-width' , function () {
+      .style('border-' + (this.isHorizontal() ? 'left' : 'top') + '-width' , function () {
         if (this._previous) {
-          var totalHeight = that.heightScale(that.getValueFromDataItem(this._previous))
           return that.options.gapBetweenWidth + 'px';
         } else {
           return '0px';
@@ -151,14 +166,14 @@ var Funnel = Backbone.View.extend({
         .remove();
   },
 
-  getPieceWidth: function () {
-    var width = this.getWidth(),
+  getPieceSize: function () {
+    var size = this.isHorizontal() ? this.getWidth() : this.getHeight(),
       dataLength = this.options.data.length;
     if (dataLength === 1) {
-      return width;
+      return size;
     } else {
       var gapsCount = dataLength - 1,
-        withoutGaps = width - (gapsCount * this.options.gapBetweenWidth);
+        withoutGaps = size - (gapsCount * this.options.gapBetweenWidth);
       return Math.round(withoutGaps / dataLength);
     }
   },
@@ -179,22 +194,30 @@ var Funnel = Backbone.View.extend({
     return this.options.height == 'auto' ? this.$el.height() : this.options.height;
   },
 
-  getGraphHeight: function () {
-    return this.getHeight() - this.getXAxisHeight();
+  getGraphValueAxisSize: function () {
+    if (this.isHorizontal()) {
+      return this.getHeight() - this.getAxisSize();
+    } else {
+      return this.getWidth() - this.getAxisSize();
+    }
   },
 
-  getXAxisHeight: function () {
-    return this.options.xAxisHeight;
+  getAxisSize: function () {
+    return this.options.axisSize;
+  },
+
+  isHorizontal: function () {
+    return !!this.options.horizontalOrientation;
   },
 
   onFunnelPieceClick: function (evt) {
     var data = evt.target.__data__;
     if (data) {
-      this.trigger('select' , data);
+      this.trigger('select' , data , evt.target);
     }
   },
 
   onAxisClick: function (evt) {
-
+    this.onFunnelPieceClick(evt);
   }
 });
