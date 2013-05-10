@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="http://underscorejs.org/underscore.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.2.1/lodash.compat.js"></script>
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
     <script src="http://backbonejs.org/backbone.js"></script>
-    <script src="Funnel.js" charset="utf-8"></script>
+    <script src="http://requirejs.org/docs/release/2.1.5/minified/require.js"></script>
     <style>
       body {
         font-family: Helvetica;
@@ -52,6 +52,12 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .funnel-zero-state {
+        position: absolute;
+        font-size: 3em;
+        color: #C0C0C0;
+        text-shadow: 0 1px 0 #FFF;
+      }
     </style>
   </head>
   <body>
@@ -60,6 +66,7 @@
     </div>
     <button id="update">Update</button>
     <button id="toggle-orientation">Toggle Orientation</button>
+    <button id="empty">Empty Data</button>
     <script type="text/javascript">
       $(function () {
         var getRandomData = function (count) {
@@ -72,31 +79,37 @@
           }
           return data;
         }
-        var funnel = new Funnel({
-          valueAttribute: 'amount',
-          uniqueAttribute: 'title',
-          height: 400,
-          sortData: true,
-          horizontalOrientation: true,
-          axisSize: 40,
-          data: [
-            {amount: 9909 , title: 'Vistors'},
-            {amount: 8999 , title: 'Unique Vistors'},
-            {amount: 3040 , title: 'Signups'},
-            {amount: 2903 , title: 'Confirmed Users'},
-            {amount: 1333 , title: 'Active Users'},
-          ],
-          axisTemplate: _.template('<div class="title"><%= title %></div><div class="amount"><%= amount %></div>')
-        });
-        $('.funnel-container').append(funnel.el);
-        $('#update').on('click' , function () {
-          var items = Math.ceil(Math.random()*7)+1;
-          funnel.update(getRandomData(items));
-        });
-        $('#toggle-orientation').on('click' , function () {
-          funnel.options.horizontalOrientation = !funnel.options.horizontalOrientation;
-          funnel.options.axisSize = funnel.options.horizontalOrientation ? 40 : 200;
-          funnel.update();
+        require(['Funnel'] , function (Funnel) {
+          var funnel = new Funnel({
+            valueAttribute: 'amount',
+            uniqueAttribute: 'title',
+            height: 400,
+            sortData: true,
+            horizontalOrientation: true,
+            axisSize: 40,
+            data: [
+              {amount: 9909 , title: 'Vistors'},
+              {amount: 8999 , title: 'Unique Vistors'},
+              {amount: 3040 , title: 'Signups'},
+              {amount: 2903 , title: 'Confirmed Users'},
+              {amount: 1333 , title: 'Active Users'},
+            ],
+            axisTemplate: _.template('<div class="title"><%= title %></div><div class="amount"><%= amount %></div>')
+          });
+          $('.funnel-container').append(funnel.el);
+          $('#update').on('click' , function () {
+            var items = Math.ceil(Math.random()*7)+1;
+            funnel.update(getRandomData(items));
+          });
+          $('#toggle-orientation').on('click' , function () {
+            funnel.options.horizontalOrientation = !funnel.options.horizontalOrientation;
+            funnel.options.axisSize = funnel.options.horizontalOrientation ? 40 : 200;
+            funnel.options.gapBetweenSize = funnel.options.horizontalOrientation ? 20 : 10;
+            funnel.update();
+          });
+          $('#empty').on('click' , function () {
+            funnel.update([]);
+          });
         });
       });
     </script>
