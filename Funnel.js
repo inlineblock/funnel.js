@@ -26,20 +26,33 @@ define([] , function () {
     initialize: function () {
       this.setup();
       this.build();
+      this.attach();
       _.defer(function (that) {
         that.render();
       } , this);
     },
 
     setup: function () {
-      this.getValueFromDataItem = _.bind(this.getValueFromDataItem , this);
+      this.onWindowResize = (_.chain ? _.chain : _)(this.onWindowResize).bind(this).debounce(100).value();
+    },
+
+    attach: function () {
+      $(window).on('resize' , this.onWindowResize);
+    },
+
+    detach: function () {
+      $(window).off('resize' , this.onWindowResize);
     },
 
     getScaleForData: function (data) {
-      var max = _.max(data , this.getValueFromDataItem);
+      var max = _.max(data , this.getValueFromDataItem , this);
       return categoryAxisScale = d3.scale[this.options.scale]()
           .rangeRound([0, this.getGraphValueAxisSize()])
           .domain([0, this.getValueFromDataItem(max)]);
+    },
+
+    onWindowResize: function () {
+      this.render();
     },
 
     build: function () {
@@ -127,7 +140,6 @@ define([] , function () {
       pieces.enter()
         .append('div')
         .attr('class' , 'funnel-piece');
-
 
       // update
       // build the squares
@@ -269,6 +281,11 @@ define([] , function () {
 
     onAxisClick: function (evt) {
       this.onFunnelPieceClick(evt);
+    },
+
+    remove: function () {
+      this.detach();
+      return Backbone.View.prototype.remove.apply(this , arguments);
     }
   });
   return Funnel;
