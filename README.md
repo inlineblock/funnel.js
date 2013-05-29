@@ -15,6 +15,7 @@ name: (type:default)
 * horizontalOrientation: (bool:true) when true, the chart renders to horizontallly. This also effects the axis.
 * valueAttribute: (string:'value') this string specifies what property to get out of the data for the size.
 * uniqueAttribute: (string:'id') this specifies what the id of a specific funnel block is, meant for tweening.
+* labelAttribute: (string: 'title') this specifies which attribute in the data is meant for the axis label. Ignored when axisTemplate is set.
 * colorAttribute: (string:'color') this specifies what the color of a data block is, this overrides the 'color'.
 * color: (string:'#EC644F') the color of the funnel blocks.
 * scale: (string:'linear') the D3 scale to use
@@ -25,6 +26,7 @@ name: (type:default)
 * sortData: (bool:false) sort the data by the valueAttribute before attempting to render.
 * zeroStateMessage: (string: '~ NO DATA ~') the string to render when the data is empty.
 * zeroStateTemplate: (mixed: false) when false, it doesn't do anything, when true it will render this when there is no data instead of the zeroStateMessage.
+* axisTemplate: (mixed: false) when false, does nothing, when truthy, it runs it as a function, with a single data block sent to it. Whatever it returns is the axis for that one block.
 
 ## Updating after initialization
 ```javascript

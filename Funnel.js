@@ -7,6 +7,7 @@ define([] , function () {
       valueAttribute: 'value',
       colorAttribute: 'color',
       uniqueAttribute: 'id',
+      labelAttribute: 'title',
       scale: 'linear', // d3 scales
       gapBetweenSize: 20, // px
       width: 'auto',
@@ -14,6 +15,8 @@ define([] , function () {
       axisSize: 40,
       sortData: false,
       color: '#EC644F',
+
+      axisTemplate: false,
 
       zeroStateMessage: '~ NO DATA ~',
       zeroStateTemplate: false // underscore template
