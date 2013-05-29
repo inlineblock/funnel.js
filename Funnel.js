@@ -5,6 +5,7 @@ define([] , function () {
     options: {
       horizontalOrientation: true,
       valueAttribute: 'value',
+      colorAttribute: 'color',
       uniqueAttribute: 'id',
       scale: 'linear', // d3 scales
       gapBetweenSize: 20, // px
@@ -145,9 +146,15 @@ define([] , function () {
       // build the squares
       pieces
         .attr('style' , '')
-        .style('border-' + (this.isHorizontal() ? 'left' : 'top') + '-color' , d3.rgb(this.options.color).darker().toString())
+        .style('background-color' , function(d) {
+          var color = d[that.options.colorAttribute] || that.options.color;
+          this.__color = color;
+          return this.__color;
+        })
+        .style('border-' + (this.isHorizontal() ? 'left' : 'top') + '-color' , function () {
+          return d3.rgb(this.__color).darker().toString();
+        })
         .style(this.isHorizontal() ? 'width' : 'height' , pieceSize + 'px')
-        .style('background-color' , this.options.color)
         .style(this.isHorizontal() ? 'top' : 'left' , function (data , i) {
           var previous = that.options.data[i-1];
           if (previous) {
