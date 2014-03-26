@@ -27,7 +27,8 @@ define([] , function () {
       'click .x-axis' : 'onAxisClick'
     },
     
-    initialize: function () {
+    initialize: function (options) {
+      this.options = _.extend({}, this.options, options);
       this.setup();
       this.build();
       this.attach();
