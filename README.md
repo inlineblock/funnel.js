@@ -47,6 +47,10 @@ var funnel = new Funnel({
 });
 ```
 
+REACT VERSION
+=============
+Check it out here: https://github.com/inlineblock/funnel.js-react
+
 LICENSE
 =======
 [MIT License](http://opensource.org/licenses/MIT)
